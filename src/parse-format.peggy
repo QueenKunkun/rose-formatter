@@ -192,7 +192,7 @@ LiteralDot = '.' {return $({type: 'literal', mask: '.'})}
 LiteralComma = ',' {return $({type:'literal', mask: ','})}
 
 
-Comparator =  '<>' / '<=' / '<' / '>=' / '>' / '='
+Comparator =  '<>' / '<=' / '<' / '>=' / '>' / '=' / '%'
 NumericConstant = s:$([+-]? [0-9]+ ('.' [0-9]*)? ('e'i [+-]? [0-9]+)?) {return Number(s)}
 IntegerConstant "integer-number" = n:$([1-9][0-9]+) {return parseInt(n)};
 Hidden "hidden" = '_' mask:(Escaped / .) {return $({type: 'hidden',  mask})}

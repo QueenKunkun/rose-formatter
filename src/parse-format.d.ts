@@ -1,6 +1,6 @@
 
   export type Condition = {
-    compare: '<' | '>' | '<>' | '>=' | '<=' | '=',
+    compare: '<' | '>' | '<>' | '>=' | '<=' | '=' | '%',
     value: number
   }
 

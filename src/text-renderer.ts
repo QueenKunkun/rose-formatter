@@ -1,4 +1,5 @@
 
+import {defaultPlugin, Plugin} from './plugins';
 import {
   Condition, 
   ConditionalFormat, 
@@ -27,6 +28,7 @@ export function testCondition(cond: Condition, n: number): boolean {
     case '<=': return n <= cond.value;
     case '>=': return n >= cond.value;
     case '>': return n > cond.value;
+    case '%': return !Boolean(n % cond.value);
   }
 }
 function stringDisplay(p: MaskedNumericToken){
@@ -243,14 +245,6 @@ function formatFraction(f: FractionFormat, n: number): string {
   return s;
 }
 
-
-const weekDays = [
-  'Sunday', 'Monday', 'Tueseday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-]
-const monthNames = [
-  'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
-]
-
 function ampm(date:Date): string{
   return (((date.getUTCHours() + 23) % 24) < 12) ? 'am': 'pm'
 }
@@ -288,7 +282,8 @@ const excelDateOrigin = excelDateToJSDate(0).getTime();
 export function jsDateToExcelDate(date: Date): number {
   return 25569.0 + ((date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) / (1000 * 60 * 60 * 24));
 }
-function formatDate(f:DateTimeFormat, date: Date): string {
+function formatDate(f:DateTimeFormat, date: Date, plugin?: Plugin): string {
+  const thePlugin = plugin ?? defaultPlugin;
   return f.parts.map((t) => {
     switch(t.type) {
       case 'time':
@@ -336,15 +331,15 @@ function formatDate(f:DateTimeFormat, date: Date): string {
           case 'dd':
             return date.getUTCDate().toString().padStart(t.mask.length, '0')
           case 'ddd':
-            return weekDays[date.getUTCDay()].substr(0,3);
+            return thePlugin.getWeekDay(date.getUTCDay(), {ddd: true});
           case 'dddd':
-            return weekDays[date.getUTCDay()]
+            return thePlugin.getWeekDay(date.getUTCDay(), {dddd: true});
           case 'mmm':
-            return monthNames[date.getUTCMonth()].substr(0, 3)
+            return thePlugin.getMonthName(date.getUTCMonth(), {mmm: true})
           case 'mmmm':
-            return monthNames[date.getUTCMonth()]
+            return thePlugin.getMonthName(date.getUTCMonth(), {mmmm: true})
           case 'mmmmm':
-            return monthNames[date.getUTCMonth()][0]
+            return thePlugin.getMonthName(date.getUTCMonth(), {mmmmm: true})
           /* istanbul ignore next */
           default:
             throw TypeError('Invalid date mask: ' + JSON.stringify(t))
@@ -360,7 +355,7 @@ function formatDate(f:DateTimeFormat, date: Date): string {
   }).join('');
 }
 
-function applyFormat(f: GenericFormat, n: number): string {
+function applyFormat(f: GenericFormat, n: number, plugin?: Plugin): string {
   switch(f.type){
     case 'scientific':
       return formatScientific(f, n);
@@ -371,15 +366,15 @@ function applyFormat(f: GenericFormat, n: number): string {
     case 'fraction':
       return formatFraction(f, n);
     case 'datetime':
-      return formatDate(f, excelDateToJSDate(n))
+      return formatDate(f, excelDateToJSDate(n), plugin)
   }
   return n.toString()
 }
 
-function formatConditional(f: ConditionalFormat[], n: number){
+function formatConditional(f: ConditionalFormat[], n: number, plugin?: Plugin){
   for(const fi of f){
     if(!fi.condition || testCondition(fi.condition, n)){
-      return applyFormat(fi.format, n);
+      return applyFormat(fi.format, n, plugin);
     }
   }
   return n.toString()
@@ -387,14 +382,26 @@ function formatConditional(f: ConditionalFormat[], n: number){
 export class TextRenderer {
   _format_string: string;
   _format_data: MultiFormat;
-  constructor(format:string){
+  _plugin?: Plugin;
+  constructor(format:string, plugin?: Plugin){
     this._format_string = format;
+    this._plugin = plugin;
     this._format_data = parse(format)
   }
-  formatNumber(n: number): string {
-    return formatConditional(this._format_data, n)
+
+  setPlugin(plugin?: Plugin) {
+    this._plugin = plugin;
   }
+
+  getPlugin() {
+    return this._plugin;
+  }
+  
+  formatNumber(n: number): string {
+    return formatConditional(this._format_data, n, this._plugin)
+  }
+
   formatDate(n: Date): string {
-    return formatConditional(this._format_data, jsDateToExcelDate(n))
+    return formatConditional(this._format_data, jsDateToExcelDate(n), this._plugin)
   }
 }

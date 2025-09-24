@@ -1,6 +1,7 @@
 "use strict";
 exports.__esModule = true;
 exports.TextRenderer = exports.jsDateToExcelDate = exports.excelDateToJSDate = exports.formatScientific = exports.formatInteger = exports.formatFixed = exports.applyScale = exports.formatLeftAlignedMaskedNumber = exports.formatMaskedNumber = exports.testCondition = void 0;
+var plugins_1 = require("./plugins");
 var parse_format_1 = require("./parse-format");
 function testCondition(cond, n) {
     if (cond === null) {
@@ -13,6 +14,7 @@ function testCondition(cond, n) {
         case '<=': return n <= cond.value;
         case '>=': return n >= cond.value;
         case '>': return n > cond.value;
+        case '%': return !Boolean(n % cond.value);
     }
 }
 exports.testCondition = testCondition;
@@ -184,12 +186,6 @@ function formatFraction(f, n) {
     s += '/' + denominator_s;
     return s;
 }
-var weekDays = [
-    'Sunday', 'Monday', 'Tueseday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-];
-var monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
-];
 function ampm(date) {
     return (((date.getUTCHours() + 23) % 24) < 12) ? 'am' : 'pm';
 }
@@ -202,7 +198,8 @@ function jsDateToExcelDate(date) {
     return 25569.0 + ((date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) / (1000 * 60 * 60 * 24));
 }
 exports.jsDateToExcelDate = jsDateToExcelDate;
-function formatDate(f, date) {
+function formatDate(f, date, plugin) {
+    var thePlugin = plugin !== null && plugin !== void 0 ? plugin : plugins_1.defaultPlugin;
     return f.parts.map(function (t) {
         switch (t.type) {
             case 'time':
@@ -248,15 +245,15 @@ function formatDate(f, date) {
                     case 'dd':
                         return date.getUTCDate().toString().padStart(t.mask.length, '0');
                     case 'ddd':
-                        return weekDays[date.getUTCDay()].substr(0, 3);
+                        return thePlugin.getWeekDay(date.getUTCDay(), { ddd: true });
                     case 'dddd':
-                        return weekDays[date.getUTCDay()];
+                        return thePlugin.getWeekDay(date.getUTCDay(), { dddd: true });
                     case 'mmm':
-                        return monthNames[date.getUTCMonth()].substr(0, 3);
+                        return thePlugin.getMonthName(date.getUTCMonth(), { mmm: true });
                     case 'mmmm':
-                        return monthNames[date.getUTCMonth()];
+                        return thePlugin.getMonthName(date.getUTCMonth(), { mmmm: true });
                     case 'mmmmm':
-                        return monthNames[date.getUTCMonth()][0];
+                        return thePlugin.getMonthName(date.getUTCMonth(), { mmmmm: true });
                     default:
                         throw TypeError('Invalid date mask: ' + JSON.stringify(t));
                 }
@@ -269,7 +266,7 @@ function formatDate(f, date) {
         }
     }).join('');
 }
-function applyFormat(f, n) {
+function applyFormat(f, n, plugin) {
     switch (f.type) {
         case 'scientific':
             return formatScientific(f, n);
@@ -280,29 +277,36 @@ function applyFormat(f, n) {
         case 'fraction':
             return formatFraction(f, n);
         case 'datetime':
-            return formatDate(f, excelDateToJSDate(n));
+            return formatDate(f, excelDateToJSDate(n), plugin);
     }
     return n.toString();
 }
-function formatConditional(f, n) {
+function formatConditional(f, n, plugin) {
     for (var _i = 0, f_1 = f; _i < f_1.length; _i++) {
         var fi = f_1[_i];
         if (!fi.condition || testCondition(fi.condition, n)) {
-            return applyFormat(fi.format, n);
+            return applyFormat(fi.format, n, plugin);
         }
     }
     return n.toString();
 }
 var TextRenderer = (function () {
-    function TextRenderer(format) {
+    function TextRenderer(format, plugin) {
         this._format_string = format;
+        this._plugin = plugin;
         this._format_data = (0, parse_format_1.parse)(format);
     }
+    TextRenderer.prototype.setPlugin = function (plugin) {
+        this._plugin = plugin;
+    };
+    TextRenderer.prototype.getPlugin = function () {
+        return this._plugin;
+    };
     TextRenderer.prototype.formatNumber = function (n) {
-        return formatConditional(this._format_data, n);
+        return formatConditional(this._format_data, n, this._plugin);
     };
     TextRenderer.prototype.formatDate = function (n) {
-        return formatConditional(this._format_data, jsDateToExcelDate(n));
+        return formatConditional(this._format_data, jsDateToExcelDate(n), this._plugin);
     };
     return TextRenderer;
 }());

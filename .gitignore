@@ -147,3 +147,7 @@ src/index.js.map
 src/text-renderer.d.ts
 src/text-renderer.js.map
 static/frozen-*
+src/plugins.js.map
+.vscode/settings.json
+src/plugins.txt
+src/plugins.js
