@@ -108,7 +108,7 @@ export function formatFixed(f: FixedFormat, n: number): string {
   n = applyScale(f, n)
   let [int,dec] = Math.abs(n).toFixed(f.decimal.totalPositions).split('.')
   const sig = n < 0 ? '-' : '';
-  int = formatMaskedNumber(f.int, int, f.thousandSeparator)
+  int = formatMaskedNumber(f.int, int, f.thousandSeparator!)
   dec = formatLeftAlignedMaskedNumber(f.decimal, dec.replace(/0+$/, ''));
   return `${sig}${int}.${dec}`
 }
@@ -301,13 +301,13 @@ function formatDate(f:DateTimeFormat, date: Date, plugin?: Plugin): string {
           case 'ss':
             return date.getUTCSeconds().toString().padStart(t.mask.length, '0')
           case '.0':
-            return (date.getUTCMilliseconds() / 1000).toFixed(t.zfill).substring(1)
+            return (date.getUTCMilliseconds() / 1000).toFixed(t.zfill!).substring(1)
           case '[s]':
-            return Math.floor((date.getTime() - excelDateOrigin)/1e3).toString().padStart(t.zfill, '0')
+            return Math.floor((date.getTime() - excelDateOrigin)/1e3).toString().padStart(t.zfill!, '0')
           case '[m]':
-            return Math.floor((date.getTime() - excelDateOrigin)/6e4).toString().padStart(t.zfill, '0')
+            return Math.floor((date.getTime() - excelDateOrigin)/6e4).toString().padStart(t.zfill!, '0')
           case '[h]':
-            return Math.floor((date.getTime() - excelDateOrigin)/3.6e6).toString().padStart(t.zfill, '0')
+            return Math.floor((date.getTime() - excelDateOrigin)/3.6e6).toString().padStart(t.zfill!, '0')
           case 'am/pm':
             return ampm(date)
           case 'a/p':

@@ -8,18 +8,20 @@ const monthNames = [
 ]
 
 export const defaultPlugin = {
-    getWeekDay(index: number, options?: {ddd?: boolean, dddd?: boolean}) {
-        if(options.ddd == true) {
+    getWeekDay(index: number, options?: { ddd?: boolean, dddd?: boolean }) {
+        if (options && options.ddd == true) {
             return weekDays[index].substring(0, 3);
         }
         return weekDays[index];
     },
 
-    getMonthName(index: number, options?: {mmm?: boolean, mmmm?: boolean, mmmmm?: boolean}) {
-        if(options.mmm == true) {
-            return monthNames[index].substring(0, 3);
-        } else if(options.mmmmm == true) {
-            return monthNames[index][0];
+    getMonthName(index: number, options?: { mmm?: boolean, mmmm?: boolean, mmmmm?: boolean }) {
+        if (options) {
+            if (options.mmm == true) {
+                return monthNames[index].substring(0, 3);
+            } else if (options.mmmmm == true) {
+                return monthNames[index][0];
+            }
         }
         return monthNames[index];
     }
