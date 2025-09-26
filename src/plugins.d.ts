@@ -9,4 +9,4 @@ export declare const defaultPlugin: {
         mmmmm?: boolean;
     }): string;
 };
-export declare type Plugin = typeof defaultPlugin;
+export type Plugin = typeof defaultPlugin;

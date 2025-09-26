@@ -17,6 +17,8 @@
     "static/frozen-*.png"
   ],
   "scripts": {
+    "generate_trace": "peggy --trace --format umd src/parse-format.peggy",
+    "build_trace": "npm run generate_trace && npx tsc -d && npx webpack",
     "generate": "peggy --format umd src/parse-format.peggy",
     "build": "npm run generate && npx tsc -d && npx webpack",
     "test": "npm run build && jest",
@@ -28,8 +30,8 @@
     "excel-style-dataformatter": "^2.0.1",
     "gif-encoder-2": "^1.0.5",
     "jest": "^27.0.4",
-    "peggy": "^1.2.0",
-    "typescript": "^4.4.2",
+    "peggy": "^5.0.6",
+    "typescript": "^5.9.2",
     "upng-js": "^2.1.0",
     "webpack-cli": "^4.9.1"
   }

@@ -284,7 +284,7 @@ export function jsDateToExcelDate(date: Date): number {
 }
 function formatDate(f:DateTimeFormat, date: Date, plugin?: Plugin): string {
   const thePlugin = plugin ?? defaultPlugin;
-  return f.parts.map((t) => {
+  return f.parts.map((t: any) => {
     switch(t.type) {
       case 'time':
         switch(t.mask){

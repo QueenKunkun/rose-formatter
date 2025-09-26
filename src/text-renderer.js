@@ -1,6 +1,15 @@
 "use strict";
-exports.__esModule = true;
-exports.TextRenderer = exports.jsDateToExcelDate = exports.excelDateToJSDate = exports.formatScientific = exports.formatInteger = exports.formatFixed = exports.applyScale = exports.formatLeftAlignedMaskedNumber = exports.formatMaskedNumber = exports.testCondition = void 0;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TextRenderer = void 0;
+exports.testCondition = testCondition;
+exports.formatMaskedNumber = formatMaskedNumber;
+exports.formatLeftAlignedMaskedNumber = formatLeftAlignedMaskedNumber;
+exports.applyScale = applyScale;
+exports.formatFixed = formatFixed;
+exports.formatInteger = formatInteger;
+exports.formatScientific = formatScientific;
+exports.excelDateToJSDate = excelDateToJSDate;
+exports.jsDateToExcelDate = jsDateToExcelDate;
 var plugins_1 = require("./plugins");
 var parse_format_1 = require("./parse-format");
 function testCondition(cond, n) {
@@ -17,7 +26,6 @@ function testCondition(cond, n) {
         case '%': return !Boolean(n % cond.value);
     }
 }
-exports.testCondition = testCondition;
 function stringDisplay(p) {
     if (p.type === 'separator' && p.mask === ',') {
         return '';
@@ -62,7 +70,6 @@ function formatMaskedNumber(f, s, thousandSeparator) {
     }
     return sMasked;
 }
-exports.formatMaskedNumber = formatMaskedNumber;
 function formatLeftAlignedMaskedNumber(f, s) {
     var sMasked = '';
     s = s.replace(/0+$/, '');
@@ -85,27 +92,23 @@ function formatLeftAlignedMaskedNumber(f, s) {
     }
     return sMasked;
 }
-exports.formatLeftAlignedMaskedNumber = formatLeftAlignedMaskedNumber;
 function applyScale(f, n) {
     var x = 2 * (f.numPercentSymbols || 0) - 3 * (f.numTrailingCommas || 0);
     return (x !== 0) ? n * Math.pow(10, x) : n;
 }
-exports.applyScale = applyScale;
 function formatFixed(f, n) {
     n = applyScale(f, n);
     var _a = Math.abs(n).toFixed(f.decimal.totalPositions).split('.'), int = _a[0], dec = _a[1];
     var sig = n < 0 ? '-' : '';
     int = formatMaskedNumber(f.int, int, f.thousandSeparator);
     dec = formatLeftAlignedMaskedNumber(f.decimal, dec.replace(/0+$/, ''));
-    return "" + sig + int + "." + dec;
+    return "".concat(sig).concat(int, ".").concat(dec);
 }
-exports.formatFixed = formatFixed;
 function formatInteger(f, n) {
     n = applyScale(f, n);
     var sig = n < 0 ? '-' : '';
     return sig + formatMaskedNumber(f.int, Math.abs(n).toFixed(0), f.thousandSeparator);
 }
-exports.formatInteger = formatInteger;
 function formatScientific(f, n) {
     var alignment = f.mantissa.int.totalPositions;
     var exponent = 0;
@@ -127,7 +130,6 @@ function formatScientific(f, n) {
     s += formatMaskedNumber(f.exponent.mask, Math.abs(exponent).toFixed(0), '');
     return s;
 }
-exports.formatScientific = formatScientific;
 function continuedFractionSearch(n, denominatorLimit) {
     var p0 = 0, q0 = 1, p1 = 1, q1 = 0;
     var af = n;
@@ -192,12 +194,10 @@ function ampm(date) {
 function excelDateToJSDate(days) {
     return new Date(Math.round((days - 25569) * 864e5));
 }
-exports.excelDateToJSDate = excelDateToJSDate;
 var excelDateOrigin = excelDateToJSDate(0).getTime();
 function jsDateToExcelDate(date) {
     return 25569.0 + ((date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) / (1000 * 60 * 60 * 24));
 }
-exports.jsDateToExcelDate = jsDateToExcelDate;
 function formatDate(f, date, plugin) {
     var thePlugin = plugin !== null && plugin !== void 0 ? plugin : plugins_1.defaultPlugin;
     return f.parts.map(function (t) {
