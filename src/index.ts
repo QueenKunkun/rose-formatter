@@ -1,3 +1,3 @@
-export * from './parse-format'
-export * from './text-renderer'
-export * from './plugins'
+export * from './parse-format';
+export * from './text-renderer';
+export * from './plugins';
